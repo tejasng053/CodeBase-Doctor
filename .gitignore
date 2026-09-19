@@ -1,0 +1,12 @@
+.env
+.env.local
+**/.env.local
+.runtime/
+**/node_modules/
+**/.next/
+**/target/
+**/data/
+*.log
+*.tsbuildinfo
+.DS_Store
+**/__pycache__/

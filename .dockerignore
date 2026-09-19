@@ -1,0 +1,11 @@
+.git
+.agents
+.codex
+.runtime
+.env
+**/.env*
+**/node_modules
+**/.next
+**/target
+**/data
+work

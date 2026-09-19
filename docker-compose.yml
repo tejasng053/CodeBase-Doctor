@@ -1,0 +1,35 @@
+# Foundation UI + API only. There is deliberately no repository runner or Docker socket mount.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    environment:
+      DOCTOR_API_TOKEN: ${DOCTOR_API_TOKEN:?Run scripts/setup-local.sh first}
+    ports:
+      - '127.0.0.1:3000:3000'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=64m']
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    # Keeps the API on localhost even inside Compose. Only the frontend port is published.
+    network_mode: service:backend
+    depends_on: [backend]
+    environment:
+      DOCTOR_API_TOKEN: ${DOCTOR_API_TOKEN:?Run scripts/setup-local.sh first}
+      DOCTOR_BACKEND_URL: http://127.0.0.1:8080
+      DOCTOR_FRONTEND_ORIGIN: http://127.0.0.1:3000
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=32m']
