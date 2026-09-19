@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 import tempfile
+import subprocess
+import sys
 import unittest
 
 spec = importlib.util.spec_from_file_location('doctor_dev', Path(__file__).with_name('dev.py'))
@@ -20,6 +22,11 @@ class LocalConfigurationTest(unittest.TestCase):
             self.assertEqual(values['DOCTOR_API_TOKEN'], 'abcdefghijklmnopqrstuvwxyz012345')
             self.assertNotIn('PATH', values)
             self.assertFalse(marker.exists())
+
+    def test_shutdown_terminates_a_service_process_group(self):
+        process = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'], start_new_session=True)
+        dev.stop_group(process)
+        self.assertIsNotNone(process.poll())
 
 
 if __name__ == '__main__':

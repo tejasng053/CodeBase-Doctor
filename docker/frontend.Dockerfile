@@ -4,6 +4,7 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --ignore-scripts
 COPY frontend/app ./app
 COPY frontend/lib ./lib
+COPY frontend/components ./components
 COPY frontend/public ./public
 COPY frontend/next.config.ts frontend/tsconfig.json frontend/next-env.d.ts ./
 ENV NEXT_TELEMETRY_DISABLED=1

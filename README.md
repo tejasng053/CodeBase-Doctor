@@ -6,7 +6,7 @@ A local developer tool for understanding and eventually repairing Java/Spring re
 
 **Current state: Milestone 1 — foundation. Repository analysis and execution are deliberately disabled.** The interface, Spring API, authenticated local connection, and read-only Docker diagnostics are implemented. Later workflow panels are empty and do not represent completed operations.
 
-Development proceeds one milestone at a time: implement, debug, show evidence, obtain your confirmation, then continue. See [milestones](docs/MILESTONES.md).
+Development proceeds one milestone at a time: implement, debug, show evidence, obtain your confirmation, then continue. See [milestones](docs/MILESTONES.md). Each completed milestone includes a PDF in `milestone-reports/` with the folder tree, file-by-file purposes, and actual debugging results.
 
 ## Run locally
 

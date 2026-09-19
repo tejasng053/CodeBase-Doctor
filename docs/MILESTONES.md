@@ -4,7 +4,7 @@ Build one milestone at a time. Debug it, run its applicable checks, record the e
 
 | Milestone | Status | Deliverable | Checks before review |
 | --- | --- | --- | --- |
-| 1. Foundation | IN PROGRESS | Project layout, local UI/API foundation, configuration guidance, safety boundaries, and this delivery plan. | Build and check the foundation's own code; verify local startup, UI/API connection, configuration errors, and accurately reported unavailable capabilities. |
+| 1. Foundation | READY FOR REVIEW | Project layout, local UI/API foundation, configuration guidance, safety boundaries, and this delivery plan. | Build and check the foundation's own code; verify local startup, UI/API connection, configuration errors, and accurately reported unavailable capabilities. |
 | 2. Safe snapshot and ingestion | NOT STARTED | Validate public GitHub inputs; bounded repository acquisition and source snapshots; explicit size and path limits; safe cancellation and cleanup. | Exercise invalid URLs, private-network destinations, traversal, symlinks, oversized repositories, timeouts, and cleanup. Confirm no repository code runs on the host. |
 | 3. Java intelligence | NOT STARTED | Java/Spring detection, build metadata, modules, structural symbols and relationships, and findings with file/line evidence. | Check Maven and Gradle fixtures, secure XML rejection, annotation-based layers, unresolved references, parser failures, and separation of observations from suspected defects. |
 | 4. Sandbox builds | NOT STARTED | Controlled baseline builds/tests with real output, resource/time limits, restricted mounts/network, and fail-closed execution when sandbox prerequisites are absent. | Verify the implemented container boundaries and failure paths; exercise timeout, cancellation, resource limits, and honest test-result parsing. Record the exact isolation tested. |
@@ -21,3 +21,5 @@ Only the foundation is in progress. All subsequent milestones require confirmati
 ## Safety evidence
 
 The design calls for isolated repository execution, narrow filesystem access, and explicit approvals. These are requirements until implemented and checked; this document does not claim rootless Docker or any other isolation has already been proven. Container isolation shares the host kernel and cannot guarantee protection against every hostile repository. Record the tested environment and residual limits when reviewing the sandbox milestone.
+
+At each review gate, create a PDF in `milestone-reports/` containing the folder tree, each created or changed file and purpose, debugging evidence, and known limits. This is required before requesting confirmation.
