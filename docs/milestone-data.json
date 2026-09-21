@@ -1,0 +1,74 @@
+[
+  {
+    "number": 1,
+    "title": "Foundation",
+    "status": "Validated",
+    "delivered": "Local UI/API, token guard, setup and initial architecture. Historical PDF preserved.",
+    "checks": "Foundation build and boundary checks; current regression suite also covers this code.",
+    "limits": "Compose image startup was not verified."
+  },
+  {
+    "number": 2,
+    "title": "Repository ingestion",
+    "status": "Validated",
+    "delivered": "Pinned public GitHub archive, bounded source maps, path policy and persisted workspaces.",
+    "checks": "5 repository policy tests; live public Spring repository scan and downloaded reports.",
+    "limits": "ZIP snapshot rather than full clone; no history, submodules or LFS hydration."
+  },
+  {
+    "number": 3,
+    "title": "Java intelligence",
+    "status": "Validated",
+    "delivered": "JavaParser metadata, Spring layers, module/symbol maps and evidence-backed findings.",
+    "checks": "13 analyzer tests; 6 Java declarations detected in the live Spring guide.",
+    "limits": "Syntactic analysis, bounded source selection, limited dynamic build metadata."
+  },
+  {
+    "number": 4,
+    "title": "Sandbox execution",
+    "status": "Implemented; runtime blocked",
+    "delivered": "Rootless Docker controller, immutable guard, offline commands, streaming output and enforced resource checks.",
+    "checks": "12 Java sandbox policy/lifecycle tests plus 17 Python guard tests pass using controlled fixtures/fake transport.",
+    "limits": "Actual image build and container execution not run; Docker daemon permission denied. Offline dependency cache is intentionally narrow."
+  },
+  {
+    "number": 5,
+    "title": "Groq planning",
+    "status": "Implemented; live provider pending",
+    "delivered": "Groq provider abstraction, structured tools, bounded context, plan generation and workflow state.",
+    "checks": "Groq response parsing plus 5 mocked workflow integration tests cover planning, approval and cancellation.",
+    "limits": "No live Groq key was supplied. Provider behavior, quota and quality remain to be verified with the fixture."
+  },
+  {
+    "number": 6,
+    "title": "Approved repair",
+    "status": "Implemented; live execution pending",
+    "delivered": "Exact-plan approval, digest-checked scoped patches, true source diff and mandatory final verification.",
+    "checks": "4 source-tool tests and mocked repair flow test approved edits, rejected scope, stale approvals and late cancellation.",
+    "limits": "No real container/Groq repair observed. Reserved branch is materialized remotely only after publication approval."
+  },
+  {
+    "number": 7,
+    "title": "Verification and reports",
+    "status": "Reports validated; execution pending",
+    "delivered": "Before/after evidence, principal change, per-file explanations, Markdown/HTML downloads and saved history.",
+    "checks": "16 report tests; actual live-scan downloads; reopened saved run in browser shows full report.",
+    "limits": "Test outcomes from external repositories remain NOT_RUN until sandbox prerequisites are met. Reports are not a complete secret scanner."
+  },
+  {
+    "number": 8,
+    "title": "GitHub publication",
+    "status": "Implemented; live publication pending",
+    "delivered": "Reviewed digest, saved-source consistency, default-head check, new doctor branch and optional draft PR.",
+    "checks": "4 mocked GitHub tests verify branch/PR behavior, idempotent completed retry and rejection of stale/tampered/colliding state.",
+    "limits": "No remote objects were created. Real token permissions and external API behavior require authorized runtime validation."
+  },
+  {
+    "number": 9,
+    "title": "UI, example and release",
+    "status": "Local UI validated; full acceptance pending",
+    "delivered": "Portfolio-inspired UI, broken Spring fixture, complete guides, file inventory and milestone PDFs.",
+    "checks": "64 backend tests, 19 Python tests, production frontend build, 8 live API boundary checks, desktop/mobile dark/light browser checks.",
+    "limits": "The full baseline-failure -> live Groq repair -> Docker pass -> GitHub PR acceptance scenario remains blocked by unavailable runtime prerequisites."
+  }
+]

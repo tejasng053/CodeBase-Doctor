@@ -25,5 +25,5 @@ if target.exists() and target.read_text()!=text:
 if not target.exists():
     with target.open('x') as f: f.write(text)
 env.chmod(0o600);target.chmod(0o600)
-print('Local configuration ready. Keys remain on this machine; repository execution is disabled.')
+print('Local configuration ready. Server keys are configured locally. Static scans are ready; execution readiness is checked separately.')
 PY

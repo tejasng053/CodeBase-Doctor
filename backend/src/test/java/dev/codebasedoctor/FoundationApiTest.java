@@ -17,6 +17,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties="doctor.api-token=test-only-0123456789abcdef0123456789abcdef")
 @AutoConfigureMockMvc
 class FoundationApiTest {
+  @org.junit.jupiter.api.io.TempDir static java.nio.file.Path data;
+  @org.springframework.test.context.DynamicPropertySource
+  static void properties(org.springframework.test.context.DynamicPropertyRegistry registry){registry.add("doctor.data-directory",()->data.toString());}
   static final String TOKEN="test-only-0123456789abcdef0123456789abcdef";
   @Autowired MockMvc api;
   @MockitoBean DockerSandbox sandbox;
@@ -29,14 +32,14 @@ class FoundationApiTest {
   @Test void authenticatedHealthReportsOnlyRealConfigurationAndNoExecution() throws Exception {
     when(sandbox.health()).thenReturn(Map.of("available",false,"message","Docker unavailable"));
     api.perform(get("/api/health").header("X-Doctor-Token",TOKEN)).andExpect(status().isOk())
-      .andExpect(jsonPath("$.status").value("UP")).andExpect(jsonPath("$.milestone").value(1))
+      .andExpect(jsonPath("$.status").value("UP")).andExpect(jsonPath("$.ingestionEnabled").value(true))
       .andExpect(jsonPath("$.executionEnabled").value(false)).andExpect(jsonPath("$.sandbox.available").value(false))
       .andExpect(header().string("Cache-Control","no-store"));
   }
-  @Test void jobsAreEmptyAndCannotStartBeforeApprovedMilestone() throws Exception {
+  @Test void invalidIntakeCannotStartAJob() throws Exception {
     api.perform(get("/api/jobs").header("X-Doctor-Token",TOKEN)).andExpect(status().isOk()).andExpect(content().json("[]"));
-    api.perform(post("/api/jobs").header("X-Doctor-Token",TOKEN).contentType("application/json").content("{\"repository\":\"https://github.com/example/repository\"}"))
-      .andExpect(status().isConflict()).andExpect(jsonPath("$.error").exists());
+    api.perform(post("/api/jobs").header("X-Doctor-Token",TOKEN).contentType("application/json").content("{\"repository\":\"http://127.0.0.1/private\"}"))
+      .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error").exists());
     verifyNoInteractions(sandbox);
   }
   @Test void refusesBlankOrWeakTokenConfiguration() {

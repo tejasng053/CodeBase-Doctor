@@ -1,4 +1,5 @@
-# Foundation UI + API only. There is deliberately no repository runner or Docker socket mount.
+# Local static analysis deployment. No Docker socket or host filesystem is mounted.
+# Use native controller + a reviewed rootless Docker context for repository execution.
 services:
   backend:
     build:
@@ -6,20 +7,24 @@ services:
       dockerfile: docker/backend.Dockerfile
     environment:
       DOCTOR_API_TOKEN: ${DOCTOR_API_TOKEN:?Run scripts/setup-local.sh first}
+      DOCTOR_DATA_DIR: /app/data
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     ports:
       - '127.0.0.1:3000:3000'
+    volumes: ['doctor-data:/app/data']
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     pids_limit: 128
-    mem_limit: 512m
+    mem_limit: 768m
     cpus: 1
     tmpfs: ['/tmp:rw,noexec,nosuid,size=64m']
   frontend:
     build:
       context: .
       dockerfile: docker/frontend.Dockerfile
-    # Keeps the API on localhost even inside Compose. Only the frontend port is published.
     network_mode: service:backend
     depends_on: [backend]
     environment:
@@ -33,3 +38,5 @@ services:
     mem_limit: 512m
     cpus: 1
     tmpfs: ['/tmp:rw,noexec,nosuid,size=32m']
+volumes:
+  doctor-data:

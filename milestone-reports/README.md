@@ -1,7 +1,5 @@
-# Milestone reports
+# Saved milestone documentation
 
-A PDF is added here when each milestone is ready for review, before asking permission to continue.
+Milestone-01-Foundation.pdf is the historical foundation delivery. Milestone-02 through Milestone-09 document the remaining consolidated stages, including each stage's folder structure, created/changed files, purpose, changes, debugging evidence and limitations. Codebase-Doctor-Complete-Guide.pdf includes the operational guides and full authored-file inventory.
 
-Each report includes the milestone scope and status, project folder tree, every source/configuration/documentation file created or changed and its purpose, debugging changes, tests actually run, unresolved limits, and the next confirmation gate. Secrets and the individual files inside dependency/build caches are excluded; those directories are described as groups.
-
-The first report is `Milestone-01-Foundation.pdf`. Future reports follow the same numbered naming convention. A report never claims future workflow features are implemented.
+Runtime-blocked stages are explicitly marked. These PDFs do not claim that a live Docker/Groq/GitHub repair succeeded. Sources are in docs/file-inventory.json, docs/milestone-data.json and the Markdown guides. Regenerate with `python3 scripts/generate_reports.py` after installing ReportLab in a separate documentation environment; review rendered pages before sharing.

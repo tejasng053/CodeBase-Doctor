@@ -1,0 +1,572 @@
+[
+  {
+    "path": ".dockerignore",
+    "purpose": "Excludes secrets, dependencies, build output, and local runtime data from Docker build contexts.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": ".env.example",
+    "purpose": "Secret-free server configuration template for local API, Groq, optional GitHub publishing, sandbox image and data location.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": ".gitignore",
+    "purpose": "Keeps credentials, installed dependencies, build artifacts, caches, and runtime data out of Git.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "PROJECT_CONTEXT.md",
+    "purpose": "Canonical future-agent handoff: owner instructions, actual code state, architecture, safety, checks and remaining acceptance tasks.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "README.md",
+    "purpose": "Project overview and startup, capabilities, demo, validation boundaries, documentation navigation and current limits.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/pom.xml",
+    "purpose": "Pins Java/Spring build dependencies, JavaParser, Commons Compress and application testing/package configuration.",
+    "milestone": 3,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/DoctorApplication.java",
+    "purpose": "Starts the Spring Boot API and discovers application components.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/agent/GroqLlmProvider.java",
+    "purpose": "Sends bounded tool-calling requests to Groq, validates provider responses and stops safely on missing keys or malformed output.",
+    "milestone": 5,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/agent/LlmProvider.java",
+    "purpose": "Provider abstraction separating the agent loop from Groq HTTP transport.",
+    "milestone": 5,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/agent/SourceTools.java",
+    "purpose": "Reads snapshot files, applies approved digest-checked exact patches and creates true changed-file records and full-file unified diffs.",
+    "milestone": 6,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/analysis/JavaSpringAnalyzer.java",
+    "purpose": "Uses JavaParser plus secure XML/literal build metadata parsing to detect stack, modules, Spring layers, symbols, relationships and findings.",
+    "milestone": 3,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/analysis/LanguageAnalyzer.java",
+    "purpose": "Defines the source-analysis extension boundary for future ecosystems.",
+    "milestone": 3,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/api/ApiErrors.java",
+    "purpose": "Maps invalid input, missing jobs and invalid workflow states to safe JSON API errors.",
+    "milestone": 2,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/api/FoundationController.java",
+    "purpose": "Exposes health, job lifecycle, approvals, cancellation, SSE snapshots, downloads and separately approved publication through REST.",
+    "milestone": 2,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/config/LocalApiGuard.java",
+    "purpose": "Requires a strong configured API token, authenticates API calls, and rejects oversized requests.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/config/Redactor.java",
+    "purpose": "Redacts configured tokens and common credential patterns from model observations, logs and reports.",
+    "milestone": 5,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/github/GitHubPublisher.java",
+    "purpose": "Validates publication approval/source integrity, creates new Git objects and doctor references, and optionally creates an approved draft PR.",
+    "milestone": 8,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/model/Models.java",
+    "purpose": "Defines typed persisted job, event, analysis, plan, change and verification records shared across modules.",
+    "milestone": 2,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/report/ReportGenerator.java",
+    "purpose": "Generates escaped Markdown and self-contained printable HTML from actual stored analysis, changes and verification evidence.",
+    "milestone": 7,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/repository/BoundedHttp.java",
+    "purpose": "Fixed-deadline HTTPS transport with redirect rejection, bounded bodies and interrupt handling.",
+    "milestone": 2,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/repository/RepositoryPolicy.java",
+    "purpose": "Validates GitHub URLs, source paths, text/size limits and sensitive or prohibited edit paths.",
+    "milestone": 2,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/repository/RepositorySource.java",
+    "purpose": "Pins public GitHub source commits, retrieves same-repo issues and validates ZIP snapshots without host extraction.",
+    "milestone": 2,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/sandbox/DockerSandbox.java",
+    "purpose": "Checks engine/image readiness, launches isolated offline containers, streams bounded output, verifies reports and cleans up after failures/cancellation.",
+    "milestone": 4,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/sandbox/SandboxPolicy.java",
+    "purpose": "Validates sandbox jobs, immutable image IDs, source import payloads and fixed execution policy.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/service/DoctorService.java",
+    "purpose": "Coordinates intake, parsing, baseline evidence, bounded model tools, plan approval, repair, cancellation and final reports.",
+    "milestone": 5,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/java/dev/codebasedoctor/store/JobStore.java",
+    "purpose": "Atomically persists private bounded job/snapshot data, creates response copies and invalidates interrupted approvals at restart.",
+    "milestone": 2,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/main/resources/application.properties",
+    "purpose": "Binds the API to loopback, sets request/error-handling limits, and maps environment-based configuration.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/FoundationApiTest.java",
+    "purpose": "Five isolated-store API tests for local authentication, honest readiness, invalid intake, weak startup tokens and oversized requests.",
+    "milestone": 2,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/agent/SourceToolsTest.java",
+    "purpose": "Checks patch approval/digests, creations/deletions, actual diffs, stale publication review and provider response shape.",
+    "milestone": 6,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/analysis/JavaSpringAnalyzerTest.java",
+    "purpose": "Thirteen tests for Java/Spring parsing, Maven/Gradle detection, reference grounding, unsafe XML and metadata corner cases.",
+    "milestone": 3,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/github/GitHubPublisherTest.java",
+    "purpose": "Four mocked HTTP tests verify new doctor branches/draft payloads, retry behavior, stale or tampered state and branch collision rejection.",
+    "milestone": 8,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/report/ReportGeneratorTest.java",
+    "purpose": "Sixteen regression tests for factual reports, unknown counts, malicious markup, secret redaction and quoted diff paths.",
+    "milestone": 7,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/repository/RepositoryPolicyTest.java",
+    "purpose": "Five tests reject unsafe URLs, traversal, symlink ZIP entries, oversized sources and prohibited paths.",
+    "milestone": 2,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/sandbox/DockerSandboxTest.java",
+    "purpose": "Nine fake-transport tests exercise readiness, isolation flags, results, streaming and container lifecycle behavior without executing Docker.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/sandbox/SandboxPolicyTest.java",
+    "purpose": "Three tests enforce bounded imports, source-path safety and execution policy.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "backend/src/test/java/dev/codebasedoctor/service/DoctorServiceTest.java",
+    "purpose": "Five mocked workflow tests cover exact approval, allowed edits, missing sandbox, late cancellation and report-error cleanup.",
+    "milestone": 5,
+    "change": "Created"
+  },
+  {
+    "path": "docker-compose.yml",
+    "purpose": "Local static-analysis UI/API deployment with a private named data volume, loopback exposure and no Docker socket mount.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "docker/backend.Dockerfile",
+    "purpose": "Builds the Spring service image and prepares writable private persistence for the unprivileged runtime user.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "docker/frontend.Dockerfile",
+    "purpose": "Builds the frontend with all source directories and runs its standalone production server as a non-root user.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "docker/guard.py",
+    "purpose": "Immutable container helper: checks enforced limits, imports bounded files, invokes fixed offline builds, quiesces build processes and parses real JUnit reports.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "docker/sandbox.Dockerfile",
+    "purpose": "Builds the trusted Java/Maven/Gradle execution image with independent non-root helper/build users and a reviewed offline dependency seed.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "docker/test_guard.py",
+    "purpose": "Seventeen Python tests for cgroup checks, archive import bounds, safe JUnit parsing, offline commands and process/report safety.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "docs/API.md",
+    "purpose": "Documents authenticated local REST/SSE endpoints, payload meanings, error states and approval boundaries.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "purpose": "Explains data flow, extension boundaries, persistence, source-snapshot decisions and implementation tradeoffs.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/DOCUMENTATION_FEATURE.md",
+    "purpose": "Defines the implemented end-user report covering repository overview, principal/per-file changes and verification evidence.",
+    "milestone": 7,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "docs/FILE_GUIDE.md",
+    "purpose": "Readable complete folder tree and per-file purpose inventory for handoff and maintenance.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/MILESTONES.md",
+    "purpose": "Tracks nine consolidated delivery stages and their mapping to the original twelve-stage brief.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "docs/MILESTONE_1_VALIDATION.md",
+    "purpose": "Records exact Milestone 1 checks, debugging fixes, observed results, and unverified limitations.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "docs/RELEASE_NOTES.md",
+    "purpose": "Records delivered behavior, debugging and exact runtime acceptance limits for the local MVP.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/SECURITY.md",
+    "purpose": "Describes local API, archive, model, sandbox and publishing boundaries, residual risks and validation limits.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/USER_GUIDE.md",
+    "purpose": "Gives setup, Groq/Docker configuration, review/publish workflow, reports, data management and troubleshooting steps.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/VALIDATION.md",
+    "purpose": "Records executed checks and distinguishes mocked integration evidence from unrun external acceptance checks.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/file-inventory.json",
+    "purpose": "Structured authored-file inventory with purpose, principal milestone and creation/modification classification.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/milestone-data.json",
+    "purpose": "Machine-readable stage titles, implementation status, checks and limitations used for PDF generation.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "docs/report-format.md",
+    "purpose": "Explains the report renderer contract, evidence hierarchy, escaping and exact diff-derived counts.",
+    "milestone": 7,
+    "change": "Created"
+  },
+  {
+    "path": "docs/validation-results.json",
+    "purpose": "Machine-readable final test suite counts, live-scan evidence and explicit runtime blockers.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/ISSUE.md",
+    "purpose": "Human-readable objective for repairing the bundled token-expiry example.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/README.md",
+    "purpose": "Documents the intentionally broken fixture, expected bug and safe sandbox-only demonstration procedure.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/pom.xml",
+    "purpose": "Defines the Java 21/Spring Boot Maven fixture and its JUnit/Spring test dependencies.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/src/main/java/example/tokens/TokenApplication.java",
+    "purpose": "Boot entry point for the intentionally broken Spring demonstration repository.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/src/main/java/example/tokens/TokenController.java",
+    "purpose": "Example REST endpoint exposing token-expiry behavior for a realistic repair target.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/src/main/java/example/tokens/TokenExpiryService.java",
+    "purpose": "Intentionally incorrect expiry boundary used to demonstrate diagnosis and scoped repair.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "examples/broken-spring-app/src/test/java/example/tokens/TokenExpiryServiceTest.java",
+    "purpose": "Regression cases specifying the expected expiry behavior; execute only inside the approved sandbox.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/AGENTS.md",
+    "purpose": "Next.js-generated development guidance for future coding agents; created automatically by the dev server.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/CLAUDE.md",
+    "purpose": "Next.js-generated reference to the local agent guidance file.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/app/api/[...path]/route.ts",
+    "purpose": "Guards same-origin browser requests and proxies allowed API/SSE/download routes with server-only credentials and bounded bodies.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "frontend/app/globals.css",
+    "purpose": "Portfolio-inspired theme palette, locally served fonts, floating navigation, editorial hero, result panels and responsive/reduced-motion rules.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "frontend/app/layout.tsx",
+    "purpose": "Defines the page document, application metadata, and global stylesheet import.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/app/page.tsx",
+    "purpose": "Renders the main Codebase Doctor workbench page.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/components/icons.tsx",
+    "purpose": "Reusable local SVG icons for navigation, workflow, downloads and status controls.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/components/job-panels.tsx",
+    "purpose": "Renders overview, architecture, findings, plan, activity, terminal, per-file diff and report downloads from real job records.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/components/workbench.tsx",
+    "purpose": "Interactive UI shell, source form, history hydration, real SSE/polling, plan approval, publication review, theme and navigation.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "frontend/lib/client.ts",
+    "purpose": "Typed API client, bounded request timeouts, job display helpers and safe GitHub link validation.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/lib/types.ts",
+    "purpose": "TypeScript contracts for actual API health, job, analysis, findings, plans, verification and publishing state.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "frontend/next-env.d.ts",
+    "purpose": "Provides generated Next.js type declarations for TypeScript.",
+    "milestone": 1,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "frontend/next.config.ts",
+    "purpose": "Configures standalone builds, local compiler checks and browser security headers with production eval disabled.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "frontend/package-lock.json",
+    "purpose": "Locks resolved frontend dependency versions for repeatable installation.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/package.json",
+    "purpose": "Defines Next.js/React/TypeScript dependencies and development, build, start, and type-check commands.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/public/favicon.svg",
+    "purpose": "Provides the application-specific browser icon.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "frontend/public/fonts/DMMono-Regular.ttf",
+    "purpose": "Locally served DMMono typeface matching the portfolio; avoids browser requests to external font services.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/public/fonts/Manrope-Variable.ttf",
+    "purpose": "Locally served Manrope typeface matching the portfolio; avoids browser requests to external font services.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/public/fonts/SpaceGrotesk-Variable.ttf",
+    "purpose": "Locally served SpaceGrotesk typeface matching the portfolio; avoids browser requests to external font services.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/public/fonts/dmmono-OFL.txt",
+    "purpose": "OFL license and attribution for the bundled dmmono font.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/public/fonts/manrope-OFL.txt",
+    "purpose": "OFL license and attribution for the bundled manrope font.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/public/fonts/spacegrotesk-OFL.txt",
+    "purpose": "OFL license and attribution for the bundled spacegrotesk font.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "frontend/tsconfig.json",
+    "purpose": "Defines TypeScript compiler checks and frontend import aliases.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  },
+  {
+    "path": "milestone-reports/README.md",
+    "purpose": "Indexes the historical/new milestone PDFs, complete handbook, source data and regeneration instructions.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "scripts/dev.py",
+    "purpose": "Safely parses configuration as data and supervises backend/frontend process groups, including compiled standalone UI preview.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "scripts/dev.sh",
+    "purpose": "Runs idempotent local setup and forwards development/production-preview options to the supervisor.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "scripts/generate_reports.py",
+    "purpose": "Reproducibly renders eight later milestone PDFs and the complete handbook from saved facts, guides and the file inventory.",
+    "milestone": 9,
+    "change": "Created"
+  },
+  {
+    "path": "scripts/preflight.sh",
+    "purpose": "Read-only Docker prerequisite checks; never installs services or changes socket permissions.",
+    "milestone": 4,
+    "change": "Created"
+  },
+  {
+    "path": "scripts/setup-local.sh",
+    "purpose": "Creates/reuses local random token configuration, rejects inconsistent files and restricts private settings to mode 0600.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "scripts/smoke.py",
+    "purpose": "Eight live local HTTP checks for readiness, history, invalid intake and browser/proxy authorization boundaries.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "scripts/test.sh",
+    "purpose": "Runs configuration and guard regression checks, Maven tests and the frontend production build.",
+    "milestone": 9,
+    "change": "Updated from foundation"
+  },
+  {
+    "path": "scripts/test_dev.py",
+    "purpose": "Checks that configuration stays literal and cannot override host command lookup, and that service process groups are terminated.",
+    "milestone": 1,
+    "change": "Retained foundation file"
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "date": "2026-09-20",
+  "backend_tests": 64,
+  "python_guard_tests": 17,
+  "python_config_tests": 2,
+  "api_smoke_checks": 8,
+  "frontend_build": "PASSED",
+  "compose_config": "PASSED",
+  "docker_runtime": "BLOCKED: daemon permission denied",
+  "groq_live": "NOT RUN: no key supplied",
+  "github_live": "NOT RUN: no publication requested or credentials supplied",
+  "suites": [
+    {
+      "name": "dev.codebasedoctor.FoundationApiTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.service.DoctorServiceTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.analysis.JavaSpringAnalyzerTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.sandbox.DockerSandboxTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.agent.SourceToolsTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.repository.RepositoryPolicyTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.github.GitHubPublisherTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.sandbox.SandboxPolicyTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "dev.codebasedoctor.report.ReportGeneratorTest",
+      "tests": "16",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "live_scan": {
+    "repository": "https://github.com/spring-guides/gs-rest-service",
+    "revision": "3f4cef01152596c19bc4d37939409358812b1421",
+    "status": "COMPLETED",
+    "symbols": 6,
+    "build": "NOT_RUN",
+    "tests": "NOT_RUN"
+  },
+  "browser": [
+    "Dark and light mode visually checked",
+    "390px mobile and desktop layout checked without horizontal overflow",
+    "History reopened full saved details",
+    "Documentation tab contains Markdown/HTML links and actual report",
+    "No browser console errors observed"
+  ]
+}

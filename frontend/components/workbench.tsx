@@ -1,66 +1,117 @@
 "use client";
-
-import { useCallback, useEffect, useState } from "react";
-import type { Health } from "@/lib/types";
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Health, Job } from "@/lib/types";
+import { api, date, isActive, label, repoName, safeGithubLink } from "@/lib/client";
+import { Icon } from "./icons";
+import { EmptyState, JobPanel, tabs, type Tab } from "./job-panels";
 const stages = ["Clone", "Detect", "Analyze", "Diagnose", "Plan", "Repair", "Verify", "Review"];
+type View = "Workspace" | "History" | "Setup";
 export default function Workbench() {
   const [health, setHealth] = useState<Health | null>(null);
+  const [healthError, setHealthError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState("SCAN");
-  const [tab, setTab] = useState("Workspace");
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [view, setView] = useState<View>("Workspace");
+  const [tab, setTab] = useState<Tab>("Overview");
   const [repository, setRepository] = useState("");
   const [objective, setObjective] = useState("");
+  const [mode, setMode] = useState<"SCAN" | "SOLVE">("SCAN");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [stream, setStream] = useState("Idle");
+  const [publishReview, setPublishReview] = useState<{ id: string; digest: string } | null>(null);
+  const [publishAccepted, setPublishAccepted] = useState(false);
+  const [createDraftPr, setCreateDraftPr] = useState(true);
+  const selected = jobs.find(job => job.id === selectedId) || null;
+  const mounted = useRef(true);
+  const upsert = useCallback((job: Job, summary = false) => setJobs(current => {
+    const existing = current.find(item => item.id === job.id);
+    if (existing && Date.parse(existing.updatedAt) > Date.parse(job.updatedAt)) return current;
+    const next = summary && existing ? { ...existing, ...job, analysis: existing.analysis, diff: existing.diff, terminal: existing.terminal, reportMarkdown: existing.reportMarkdown, events: existing.events } : job;
+    return existing ? current.map(item => item.id === job.id ? next : item) : [job, ...current];
+  }), []);
   const refresh = useCallback(async () => {
-    setLoading(true); setError("");
-    try {
-      const response = await fetch("/api/health", { cache: "no-store", signal: AbortSignal.timeout(15000) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "The local backend could not be reached.");
-      setHealth(data);
-    } catch (cause) { setHealth(null); setError(cause instanceof Error ? cause.message : "Connection failed."); }
-    finally { setLoading(false); }
-  }, []);
-  useEffect(() => { void refresh(); }, [refresh]);
-  return <div className="app-shell">
-    <aside className="sidebar">
-      <a href="/" className="brand" aria-label="Codebase Doctor home"><span className="brand-mark">+</span><span>codebase<span className="brand-light">doctor</span></span></a>
-      <div className="sidebar-label">LOCAL WORKSPACE</div>
-      <nav aria-label="Workspace sections">{["Workspace", "Documentation", "Activity"].map((name, index) => <button key={name} className={tab === name ? "nav-item active" : "nav-item"} onClick={() => setTab(name)} aria-current={tab === name ? "page" : undefined}><span className="nav-icon">{["⌘", "▤", "≡"][index]}</span>{name}{name === "Workspace" && <span className="nav-count">01</span>}</button>)}</nav>
-      <div className="sidebar-label recent-label">RECENT REPOSITORIES</div>
-      <p className="sidebar-empty">Your repositories will appear here after your first analysis.</p>
-      <div className="sidebar-bottom"><div className="local-icon">⌂</div><div><strong>Local environment</strong><span>Private to this computer</span></div></div>
-    </aside>
-    <div className="main-shell">
-      <header className="topbar"><div>Workspace <span className="crumb">/</span> <strong>{tab}</strong></div><span className="foundation-pill"><span /> Foundation · Milestone 01</span></header>
-      <main>
-        <div className="page-heading"><div className="eyebrow">JAVA + SPRING, FIRST</div><h1>{tab === "Documentation" ? "A clear record of every change." : tab === "Activity" ? "Every action, accounted for." : "Understand. Repair. Verify."}</h1><p>{tab === "Documentation" ? "Repository context and change explanations, grounded in real execution." : tab === "Activity" ? "Operations and their results will appear here when workflows are enabled." : "A focused workspace for healthier Java and Spring codebases."}</p></div>
-        <div className="milestone-note"><span className="note-icon">i</span><div><strong>The foundation is ready to review.</strong><p>Repository workflows are disabled until the next milestones are built, tested, and approved.</p></div><span className="small-label">NO REPO EXECUTION</span></div>
-        {error && <div className="error-notice" role="alert"><strong>Backend connection unavailable</strong><p>{error}</p><button className="text-button" onClick={() => void refresh()}>Retry connection</button></div>}
-        {tab === "Workspace" && <>
-          <div className="workspace-grid"><section className="panel intake"><div className="panel-heading"><div><span className="section-number">01</span><h2>Start with a repository</h2></div><span className="tag">PUBLIC GITHUB</span></div>
-            <form onSubmit={(event) => event.preventDefault()}>
-              <label htmlFor="repository">Repository URL</label><div className="input-with-icon"><span aria-hidden="true">↗</span><input id="repository" type="url" placeholder="https://github.com/owner/repository" value={repository} onChange={event => setRepository(event.target.value)} autoComplete="off" /></div>
-              <p className="field-note">Your original repository will require approval before any changes.</p>
-              <fieldset><legend>What would you like to do?</legend><div className="mode-options"><button type="button" className={mode === "SCAN" ? "mode-card selected" : "mode-card"} onClick={() => setMode("SCAN")} aria-pressed={mode === "SCAN"}><span className="radio-mark" /><strong>Doctor Scan</strong><span>Understand the repo. Find evidence.</span></button><button type="button" className={mode === "SOLVE" ? "mode-card selected" : "mode-card"} onClick={() => setMode("SOLVE")} aria-pressed={mode === "SOLVE"}><span className="radio-mark" /><strong>Solve an issue</strong><span>Investigate a specific objective.</span></button></div></fieldset>
-              <label htmlFor="objective">{mode === "SOLVE" ? "Issue or objective" : "Additional context"}<span className="optional">{mode === "SCAN" ? "Optional" : "Required for issue solving"}</span></label><textarea id="objective" rows={3} placeholder={mode === "SOLVE" ? "Paste a GitHub issue or describe the problem…" : "Anything the doctor should pay attention to…"} value={objective} onChange={event => setObjective(event.target.value)} />
-              <div className="form-footer"><span><span className="lock">◇</span> Approval before edits</span><button className="primary-button" type="submit" disabled title="Repository intake is a later approved milestone">Analyze repository <span>↗</span></button></div>
-            </form>
-          </section><aside className="panel environment"><div className="panel-heading"><h2>Environment</h2><button className="icon-button" onClick={() => void refresh()} disabled={loading} aria-label="Refresh environment status">↻</button></div>
-            <div className="environment-row"><div><strong>Local API</strong><span>Spring Boot · Java 21</span></div><span className={health ? "status good" : "status muted"}>{loading ? "Checking" : health ? "Connected" : "Unavailable"}</span></div>
-            <div className="environment-row"><div><strong>Docker sandbox</strong><span>Repository execution boundary</span></div><span className="status caution">Disabled</span></div>
-            <p className="diagnostic" aria-live="polite">{health?.sandbox.message || "Waiting for local Docker diagnostics."}</p>
-            <div className="environment-row"><div><strong>Groq</strong><span>Reasoning provider</span></div><span className="status muted">{health ? health.groqConfigured ? "Configured" : "Not configured" : "Unknown"}</span></div>
-            <p className="environment-note">No API key is needed for this milestone. No repository or model requests are sent.</p><div className="safety-card"><span>⌁</span><div><strong>Review comes first</strong><p>Plans, edits, and publishing each get a deliberate approval step.</p></div></div>
-          </aside></div>
-          <section className="panel pipeline"><div className="panel-heading"><h2>The path to a verified change</h2><span className="small-label">WORKFLOW PREVIEW</span></div><ol>{stages.map((stage, index) => <li key={stage}><span className="step-number">{String(index + 1).padStart(2, "0")}</span><strong>{stage}</strong><span className="pending">Not started</span></li>)}</ol></section>
-          <div className="bottom-note"><span>◈</span> Real output. Explicit approvals. A documented result.<button className="text-button" onClick={() => setTab("Documentation")}>Explore the report structure <span>→</span></button></div>
-        </>}
-        {tab === "Documentation" && <section className="panel documentation"><div className="panel-heading"><h2>The Doctor Report</h2><span className="tag">PLANNED FEATURE</span></div><p className="intro">Every completed analysis will explain what the repository does and what the bot actually changed. Report generation is scheduled for a later approved milestone.</p><div className="report-sections">{[["01", "Repository overview", "Detected stack, modules, key files, and architecture relationships found in the code."], ["02", "The main change", "A plain-English explanation of the primary fix and why it matters."], ["03", "File-by-file explanation", "What changed in each file, why it changed, and the actual Git diff."], ["04", "Verification and limits", "Real baseline and final build/test results, unresolved concerns, and checks that did not run."]].map(([number, title, body]) => <article key={number}><span className="section-number">{number}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}</div><div className="report-footer"><span>Downloadable Markdown · Evidence-backed findings</span><button className="primary-button" disabled>No report generated yet</button></div></section>}
-        {tab === "Activity" && <section className="panel activity-empty"><div className="empty-symbol">⌘</div><h2>No repository operations yet</h2><p>The foundation only checks local service availability. Repository intake, builds, tools, and approvals will be recorded here after those milestones are enabled.</p><button className="secondary-button" onClick={() => setTab("Workspace")}>Back to workspace</button></section>}
-        <footer className="page-footer"><span>CODEBASE DOCTOR <span className="footer-divider">/</span> LOCAL DEVELOPMENT</span><span>Milestone 01 · Review before continuing</span></footer>
-      </main>
-    </div>
+    setLoading(true);
+    const results = await Promise.allSettled([api<Health>("health"), api<Job[]>("jobs")]);
+    if (!mounted.current) return;
+    if (results[0].status === "fulfilled") { setHealth(results[0].value); setHealthError(""); }
+    else { setHealth(null); setHealthError(results[0].reason instanceof Error ? results[0].reason.message : "The backend is unavailable."); }
+    if (results[1].status === "fulfilled") { for (const job of results[1].value) upsert(job, true); setHistoryLoaded(true); setRefreshVersion(value => value + 1); }
+    else if (results[0].status === "fulfilled") setError(results[1].reason instanceof Error ? results[1].reason.message : "Run history could not be loaded.");
+    setLoading(false);
+  }, [upsert]);
+  useEffect(() => {
+    mounted.current = true; void refresh();
+    try { const saved = localStorage.getItem("doctor-theme"); if (saved === "light" || saved === "dark") setTheme(saved); const id = localStorage.getItem("doctor-selected-job"); if (id) setSelectedId(id); } catch {}
+    return () => { mounted.current = false; };
+  }, [refresh]);
+  useEffect(() => { document.documentElement.dataset.theme = theme; try { localStorage.setItem("doctor-theme", theme); } catch {} }, [theme]);
+  useEffect(() => { try { if (selectedId) localStorage.setItem("doctor-selected-job", selectedId); else localStorage.removeItem("doctor-selected-job"); } catch {} }, [selectedId]);
+  useEffect(() => {
+    if (!selectedId) return;
+    const controller = new AbortController();
+    void api<Job>(`jobs/${selectedId}`, undefined, controller.signal).then(job => { if (!controller.signal.aborted) upsert(job); }).catch(cause => { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Run details could not be loaded."); });
+    return () => controller.abort();
+  }, [selectedId, refreshVersion, upsert]);
+  useEffect(() => {
+    if (!selected || !isActive(selected)) { setStream("Idle"); return; }
+    const id = selected.id;
+    const source = new EventSource(`/api/jobs/${id}/events`);
+    let disposed = false;
+    setStream("Connecting");
+    source.onopen = () => setStream("Live");
+    source.onerror = () => setStream("Reconnecting · showing last received result");
+    source.addEventListener("snapshot", (event: MessageEvent) => {
+      try { const job = JSON.parse(event.data) as Job; if (job.id !== id || !job.status || !Array.isArray(job.events)) throw new Error(); upsert(job); setStream("Live"); }
+      catch { setStream("Invalid update · refreshing snapshot"); }
+    });
+    const poll = window.setInterval(() => { void api<Job>(`jobs/${id}`).then(job => { if (!disposed) upsert(job); }).catch(() => { if (!disposed) setStream("Reconnecting · showing last received result"); }); }, 12000);
+    return () => { disposed = true; source.close(); window.clearInterval(poll); };
+  }, [selected?.id, selected?.status, upsert]);
+  const canStart = health?.ingestionEnabled === true && !busy && !!repository.trim() && (mode !== "SOLVE" || !!objective.trim());
+  async function start(event: React.FormEvent) {
+    event.preventDefault(); if (!canStart) return;
+    setBusy("start"); setError("");
+    try { const job = await api<Job>("jobs", { repository: repository.trim(), objective: objective.trim(), mode }); upsert(job); setSelectedId(job.id); setTab("Overview"); setPublishReview(null); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "The run could not be started."); }
+    finally { setBusy(null); }
+  }
+  async function action(kind: "approve" | "cancel" | "publish") {
+    if (!selected || busy) return;
+    if (kind === "publish" && (!publishAccepted || !publishReview || publishReview.id !== selected.id || publishReview.digest !== selected.publicationDigest)) { setError("The publication review is out of date. Review the current changes again."); return; }
+    const id = selected.id;
+    setBusy(kind); setError("");
+    const body = kind === "approve" ? { approvalDigest: selected.approvalDigest } : kind === "publish" ? { publicationDigest: publishReview!.digest, createDraftPr } : {};
+    try { const job = await api<Job>(`jobs/${id}/${kind}`, body); upsert(job); if (kind === "publish") { setPublishReview(null); setPublishAccepted(false); } }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "The action failed."); void api<Job>(`jobs/${id}`).then(job => upsert(job)).catch(() => {}); }
+    finally { setBusy(null); }
+  }
+  function choose(job: Job) { setSelectedId(job.id); setView("Workspace"); setPublishReview(null); setPublishAccepted(false); }
+  const sourceIndex = selected ? stages.findIndex(stage => stage.toLowerCase() === selected.stage?.toLowerCase()) : -1;
+  const branchLink = safeGithubLink(selected?.publishedBranchUrl), prLink = safeGithubLink(selected?.pullRequestUrl);
+  return <div className="app-shell portfolio-workbench"><a className="skip-link" href="#main-content">Skip to workspace</a>
+    <aside className="sidebar"><button className="brand" onClick={() => setView("Workspace")} aria-label="Codebase Doctor home"><span className="brand-mark"><Icon name="pulse" size={23}/></span><span>codebase<span className="brand-light">doctor</span></span></button><div className="sidebar-label">DEVELOPER WORKSPACE</div><nav aria-label="Workspace sections">{(["Workspace", "History", "Setup"] as View[]).map((name, index) => <button key={name} aria-label={name} className={`nav-item ${view === name ? "active" : ""}`} onClick={() => setView(name)} aria-current={view === name ? "page" : undefined}><Icon name={index === 0 ? "grid" : index === 1 ? "folder" : "shield"}/><span>{name}</span>{name === "History" && historyLoaded && <span className="nav-count">{jobs.length}</span>}</button>)}</nav><div className="sidebar-label recent-label">RECENT REPOSITORIES</div>{jobs.length ? <div className="recent-jobs">{jobs.slice(0, 6).map(job => <button key={job.id} onClick={() => choose(job)} className={selectedId === job.id ? "selected" : ""}><Icon name="branch" size={14}/><span>{repoName(job.repository)}</span></button>)}</div> : <p className="sidebar-empty">{historyLoaded ? "Your repositories will appear here after your first analysis." : "Run history loads from your local backend."}</p>}<div className="sidebar-bottom"><Icon name="shield" size={19}/><div><strong>Local control.</strong><span>Review every change.</span></div></div></aside>
+    <div className="main-shell"><header className="topbar"><div className="breadcrumbs">Workspace <span>/</span><strong>{view}</strong></div><div className="header-actions"><span className="connection"><i className={health ? "online" : "offline"}/>{loading ? "Checking services" : health ? "Local API connected" : "Backend offline"}</span><button className="theme-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}><Icon name={theme === "dark" ? "moon" : "sun"} size={16}/><span>{theme === "dark" ? "Dark" : "Light"}</span></button></div></header>
+    <main id="main-content"><div className="page-heading"><div><div className="eyebrow">JAVA + SPRING / CODEBASE INTELLIGENCE</div><h1>{view === "History" ? <>Every run.<br/><em>Every decision.</em></> : view === "Setup" ? <>Your workspace.<br/><em>Your boundaries.</em></> : <>Understand the code.<br/><em>Know what changed.</em></>}</h1><p>{view === "History" ? "Return to the evidence, changes, and documentation from every repository." : view === "Setup" ? "Actual service readiness and the controls around repository execution." : "From repository to a reviewable repair. With a clear record of everything along the way."}</p></div><div className="hero-index"><span>THE WORKFLOW / 01</span><div className="doctor-emblem"><Icon name="pulse" size={110}/><span className="emblem-corner">↗</span></div><span>READ. REASON. REPAIR.</span></div></div>
+    <div className="studio-rule"><span>JAVA / SPRING / GROQ</span><a href="#workspace-content">EXPLORE THE WORKSPACE <span>↓</span></a><span>BUILT AROUND EVIDENCE</span></div><div id="workspace-content"/>
+    {healthError && <div className="notice error" role="alert"><div><strong>Backend connection unavailable</strong><p>{healthError}</p></div><button className="text-button" onClick={() => void refresh()}>Retry <Icon name="refresh" size={14}/></button></div>}
+    {error && <div className="notice error" role="alert"><p>{error}</p><button className="icon-button" aria-label="Dismiss error" onClick={() => setError("")}><Icon name="close" size={17}/></button></div>}
+    {view === "History" ? <section className="panel"><div className="panel-heading"><h2>Run history</h2><button className="text-button" disabled={loading} onClick={() => void refresh()}>Refresh <Icon name="refresh" size={14}/></button></div>{jobs.length ? <div className="history-list">{jobs.map(job => <button key={job.id} onClick={() => choose(job)}><span className="history-icon"><Icon name="branch"/></span><span><strong>{repoName(job.repository)}</strong><small>{job.mode} · {date(job.createdAt)}</small></span><span className={`status status-${job.status.toLowerCase()}`}>{label(job.status)}</span><Icon name="arrow"/></button>)}</div> : <EmptyState title={historyLoaded ? "Your first run starts here." : "History is not available yet."}>{historyLoaded ? "Analyze a public GitHub repository from the workspace. Its results will be saved locally." : "Connect to the local backend to load existing runs."}</EmptyState>}</section> : view === "Setup" ? <div className="setup-grid"><Environment health={health} loading={loading} refresh={refresh}/><section className="panel setup-notes"><span className="eyebrow">SAFETY BY DESIGN</span><h2>Separate understanding<br/>from execution.</h2><p>Static repository analysis can run without Docker or Groq. Executing repository builds and repairing files requires the configured Docker sandbox.</p><ul><li>Plan approval authorizes sandbox edits and verification.</li><li>Publishing needs a second, explicit confirmation.</li><li>Publishing creates a new doctor branch and an optional draft PR.</li><li>Model and GitHub credentials stay on the local server.</li></ul><p>Configure Groq and publishing credentials through the project’s local environment setup. Do not paste secrets into the issue or repository fields.</p><div className="small-note">Containers reduce exposure but do not remove every risk. Review the project’s security guide before running an unfamiliar repository.</div></section></div> : <>
+      <div className="workspace-grid"><section className="panel intake"><div className="panel-heading"><div><span className="section-number">01</span><h2>Start with a repository</h2></div><span className="tag">PUBLIC GITHUB</span></div><form onSubmit={start}><label htmlFor="repository">Repository URL</label><div className="input-with-icon"><Icon name="branch" size={17}/><input id="repository" type="url" required maxLength={500} placeholder="https://github.com/owner/repository" value={repository} onChange={event => setRepository(event.target.value)} autoComplete="off" spellCheck={false}/></div><p className="field-note">Read-only analysis works without a model key. Repair and publishing require approval.</p><fieldset><legend>What would you like to do?</legend><div className="mode-options"><button type="button" className={`mode-card ${mode === "SCAN" ? "selected" : ""}`} onClick={() => setMode("SCAN")} aria-pressed={mode === "SCAN"}><Icon name="pulse" size={18}/><strong>Doctor Scan</strong><span>Understand the repo. Find evidence.</span></button><button type="button" className={`mode-card ${mode === "SOLVE" ? "selected" : ""}`} onClick={() => setMode("SOLVE")} aria-pressed={mode === "SOLVE"}><Icon name="branch" size={18}/><strong>Solve an issue</strong><span>Investigate a specific objective.</span></button></div></fieldset><label htmlFor="objective">{mode === "SOLVE" ? "Issue or objective" : "Additional context"}<span className="optional">{mode === "SCAN" ? "Optional" : "Required"}</span></label><textarea id="objective" rows={3} required={mode === "SOLVE"} maxLength={12000} placeholder={mode === "SOLVE" ? "Paste a GitHub issue URL, issue text, or describe the problem…" : "Anything the doctor should pay attention to…"} value={objective} onChange={event => setObjective(event.target.value)}/><div className="form-footer"><span><Icon name="shield" size={14}/>Review before repairs</span><button className="primary-button" type="submit" disabled={!canStart} title={health?.ingestionEnabled ? undefined : "Repository intake is unavailable until the backend is ready."}>{busy === "start" ? "Starting analysis…" : "Analyze repository"}<Icon name="arrow" size={17}/></button></div></form></section><Environment health={health} loading={loading} refresh={refresh}/></div>
+      {selected ? <><section className="panel selected-run"><div><span className="eyebrow">CURRENT RUN</span><h2>{repoName(selected.repository)}</h2><span className="run-meta">{date(selected.createdAt)} · {selected.mode} · {selected.id.slice(0, 8)}</span></div><div className="run-actions"><span className={`status status-${selected.status.toLowerCase()}`}>{label(selected.status)}</span>{isActive(selected) && <button className="secondary-button compact" disabled={!!busy} onClick={() => void action("cancel")}>{busy === "cancel" ? "Cancelling…" : "Cancel run"}</button>}<button className="icon-button" aria-label="Refresh selected run" disabled={!!busy} onClick={() => void api<Job>(`jobs/${selected.id}`).then(job => upsert(job)).catch(cause => setError(cause.message))}><Icon name="refresh" size={17}/></button></div></section>
+      {selected.error && <div className="notice error" role="alert"><div><strong>Run needs attention</strong><p>{selected.error}</p></div></div>}
+      <section className="panel pipeline"><div className="panel-heading"><h2>The path to a verified change</h2><span className="small-label">{isActive(selected) ? stream : "RECORDED RUN"}</span></div><ol>{stages.map((stage, index) => { const events = selected.events.filter(event => event.stage?.toLowerCase() === stage.toLowerCase()); const ran = events.length > 0; const current = isActive(selected) && sourceIndex === index; return <li key={stage} className={current ? "current" : ran ? "recorded" : ""}><span className="step-number">{String(index + 1).padStart(2, "0")}</span><strong>{stage}</strong><span className="pending">{current ? label(selected.status === "AWAITING_APPROVAL" ? "AWAITING_APPROVAL" : "RUNNING") : ran ? label(events[events.length - 1].status) : "Not recorded"}</span></li>; })}</ol></section>
+      {selected.status === "AWAITING_APPROVAL" && <section className="approval-panel"><div><Icon name="shield" size={23}/><h3>Review the plan. Then authorize the repair.</h3></div><p>Approval allows edits in the isolated workspace and real verification for the plan shown below.</p><div className="action-row"><button className="secondary-button" onClick={() => setTab("Plan")}>Read the plan</button><button className="primary-button" disabled={!!busy || !health?.executionEnabled || !selected.approvalDigest} title={!health?.executionEnabled ? "The Docker sandbox must be available before repairs can run." : undefined} onClick={() => void action("approve")}>{busy === "approve" ? "Approving…" : "Approve plan & repair"}</button></div>{!health?.executionEnabled && <p className="small-note">Repair is unavailable until the Docker sandbox passes its checks. The analysis and report remain accessible.</p>}</section>}
+      <section className="panel results-panel"><div className="tabs" role="tablist" aria-label="Repository results">{tabs.map(name => <button key={name} role="tab" aria-selected={tab === name} aria-controls="result-panel" id={`tab-${name}`} tabIndex={tab === name ? 0 : -1} onKeyDown={event => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) { event.preventDefault(); const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (tabs.indexOf(name) + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length; setTab(tabs[next]); document.getElementById(`tab-${tabs[next]}`)?.focus(); } }} onClick={() => setTab(name)}>{name}{name === "Findings" && !!selected.analysis?.findings.length && <span>{selected.analysis.findings.length}</span>}</button>)}</div><div role="tabpanel" id="result-panel" aria-labelledby={`tab-${tab}`} tabIndex={0}><JobPanel key={selected.id} job={selected} tab={tab}/></div></section>
+      {selected.diff && <section className="panel publishing-panel"><div className="panel-heading"><div><Icon name="branch" size={18}/><h2>Publish only when you are ready</h2></div>{selected.publishedCommit && <span className="status good">Published</span>}</div><div className="panel-body"><p>Create a commit on a new GitHub doctor branch. Your default branch is not updated by this action.</p>{branchLink || prLink ? <div className="action-row">{branchLink && <a className="secondary-button" href={branchLink} target="_blank" rel="noreferrer">Open branch ↗</a>}{prLink && <a className="primary-button" href={prLink} target="_blank" rel="noreferrer">Open draft PR ↗</a>}</div> : <button className="secondary-button" disabled={!!busy || selected.status !== "COMPLETED" || !health?.publishingConfigured || !selected.publicationDigest} onClick={() => { setPublishReview({ id: selected.id, digest: selected.publicationDigest! }); setPublishAccepted(false); }} title={!health?.publishingConfigured ? "Configure publishing credentials on the backend first." : undefined}>Review publication</button>}{!health?.publishingConfigured && <p className="small-note">Publishing credentials are not configured. You can download the diff and report.</p>}{publishReview?.id === selected.id && <div className="publication-review"><h3>Confirm this GitHub action</h3><dl><dt>Repository</dt><dd>{repoName(selected.repository)}</dd><dt>Reserved branch</dt><dd>{selected.branch || "A new doctor branch generated by the backend"}</dd><dt>Files changed</dt><dd>{selected.changes.length}</dd></dl><p>Review the Diff tab first. This action sends the approved changed files to GitHub and creates a commit.</p><label className="checkbox-label"><input type="checkbox" checked={createDraftPr} onChange={event => setCreateDraftPr(event.target.checked)}/>Also create a draft pull request</label><label className="checkbox-label"><input type="checkbox" checked={publishAccepted} onChange={event => setPublishAccepted(event.target.checked)}/>I reviewed these changes and approve publishing them to a new branch.</label><div className="action-row"><button className="primary-button" disabled={!!busy || !publishAccepted || publishReview.digest !== selected.publicationDigest} onClick={() => void action("publish")}>{busy === "publish" ? "Publishing…" : createDraftPr ? "Publish branch & draft PR" : "Publish branch"}</button><button className="text-button" disabled={!!busy} onClick={() => setPublishReview(null)}>Cancel publication</button></div></div>}</div></section>}</> : <section className="panel welcome-report"><div><span className="eyebrow">DOCUMENTATION IS PART OF THE RESULT.</span><h2>The full story.<br/><em>Not just a diff.</em></h2><p>Each run produces a shareable record of what the repository does, what the bot changed, and what was actually verified.</p></div><div className="report-preview">{[["01", "Repository overview", "Stack, modules, key files, and architecture."], ["02", "The main changes", "The primary fix and an explanation for each file."], ["03", "Evidence & verification", "Actual findings, build output, tests, and open concerns."]].map(([number, title, description]) => <div key={number}><span>{number}</span><div><h3>{title}</h3><p>{description}</p></div><Icon name="arrow" size={16}/></div>)}<span className="mono report-formats">MARKDOWN + PRINTABLE HTML</span></div></section>}
+    </>}
+    <footer className="page-footer"><span>CODEBASE DOCTOR / LOCAL WORKSPACE</span><span>Real evidence. Reviewable changes.</span></footer></main></div>
   </div>;
+}
+function Environment({ health, loading, refresh }: { health: Health | null; loading: boolean; refresh: () => Promise<void> }) {
+  return <aside className="panel environment"><div className="panel-heading"><h2>Environment</h2><button className="icon-button" onClick={() => void refresh()} disabled={loading} aria-label="Refresh environment status"><Icon name="refresh" size={17}/></button></div><div className="environment-row"><div><strong>Repository analysis</strong><span>Read-only source inspection</span></div><span className={`status ${health?.ingestionEnabled ? "good" : "muted"}`}>{loading ? "Checking" : health?.ingestionEnabled ? "Ready" : "Unavailable"}</span></div><div className="environment-row"><div><strong>Docker sandbox</strong><span>Builds, tests, and repairs</span></div><span className={`status ${health?.executionEnabled ? "good" : "caution"}`}>{health ? health.executionEnabled ? "Ready" : "Unavailable" : "Unknown"}</span></div><p className="diagnostic">{health?.sandbox.message || "Waiting for local sandbox diagnostics."}</p><div className="environment-row"><div><strong>Groq</strong><span>Reasoning & repair plans</span></div><span className={`status ${health?.groqConfigured ? "good" : "muted"}`}>{health ? health.groqConfigured ? "Configured" : "Not configured" : "Unknown"}</span></div><div className="environment-row"><div><strong>GitHub publishing</strong><span>Separate explicit approval</span></div><span className={`status ${health?.publishingConfigured ? "good" : "muted"}`}>{health ? health.publishingConfigured ? "Configured" : "Not configured" : "Unknown"}</span></div><div className="safety-card"><Icon name="shield" size={19}/><div><strong>Useful without a model key.</strong><p>Static analysis and repository documentation stay available when intake is ready.</p></div></div></aside>;
 }

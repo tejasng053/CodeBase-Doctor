@@ -1,49 +1,43 @@
-# Codebase Doctor - project context
+# Codebase Doctor - canonical project context
 
-Read this file before any future work. Update it after each meaningful milestone. Never claim a feature works without verification.
+Updated 20 September 2026. Read this before future work. Never infer runtime success from implementation or mocked tests.
 
-## Vision
-A local Java/Spring repository doctor: understand a codebase, diagnose issues, propose a plan, obtain approval, edit safely, run real tests, and provide a reviewable diff and plain-English documentation. Groq is the intended application LLM; Codex is the development assistant.
+## Vision and owner scope
 
-## Owner instructions and working directory
-- Project: `/home/tejas-ng/Desktop/coding/projects/code base Doctor`.
-- Work one milestone at a time, debug it, then obtain explicit confirmation before proceeding.
-- At every completed milestone, create a PDF in `milestone-reports/` with folder structure, every created/changed project file and its purpose, changes, checks, and limits.
-- Keep the PC safe. Never run untrusted repository build scripts on the host, change Docker socket permissions, or silently use a host fallback.
-- Build the end-user documentation feature: repository overview, principal changes, per-file reasons, and real before/after evidence.
+Local Java/Spring repository diagnosis, reviewed Groq repairs, real isolated verification, source diff and documentation explaining repository overview, principal changes and every changed file. User chose `/home/tejas-ng/Desktop/coding/projects/code base Doctor`. Latest instruction is to finish all development parts and documentation together; earlier per-milestone development pauses no longer apply. Product plan/publication approvals remain mandatory. UI must resemble the owner’s `../potfolio` project; exact local palette and Space Grotesk/Manrope/DM Mono fonts, floating navigation and editorial typography were applied.
 
-## Current milestone
-Milestone 1 - foundation, validated and ready for owner review. Milestone 2 has not started. Full milestone gates: `docs/MILESTONES.md`. Verification evidence: `docs/MILESTONE_1_VALIDATION.md`.
+## Current state
 
-## Architecture and stack
-Next.js 16.3.5 / React 19.3 / TypeScript App Router UI -> same-origin guarded proxy -> Spring Boot 3.5.16 / Java 21 API. UI `127.0.0.1:3000`; backend `127.0.0.1:8080`. DockerSandbox currently provides read-only engine diagnostics only.
+All nine consolidated implementation stages are delivered in code. Live static source analysis, reports and local UI are verified. **Runtime acceptance is incomplete** for Docker execution, live Groq repairs and GitHub publication. No provider keys were supplied; Docker daemon access is denied. See docs/MILESTONES.md, VALIDATION.md and validation-results.json; milestone PDFs record the distinction.
 
-## Directory structure
-- `frontend/`: local UI, API proxy, typed future workflow contract.
-- `backend/`: Spring API, local token guard, read-only Docker diagnostics, foundation tests.
-- `docker/`, `docker-compose.yml`: foundation containers; no runner or socket mount.
-- `scripts/`: safe local setup, service supervisor, tests and smoke checks.
-- `docs/`: milestone gates, product documentation contract, validation evidence.
-- `milestone-reports/`: one PDF per completed milestone.
-- `examples/`: reserved, no broken application is delivered yet.
+## Stack and architecture
+
+Next.js 16.3.5 / React 19.3 / TypeScript -> authenticated same-origin proxy -> Spring Boot 3.5.16 / Java 21. JavaParser supplies source analysis. JSON files persist private bounded job history; no PostgreSQL is required. Controller uses pinned GitHub ZIP snapshots, exact in-memory patch overlays, Groq local tool calls, rootless offline Docker verification and separately approved GitHub Git Data API publication. UI is at 127.0.0.1:3000; API is loopback 8080.
 
 ## Implemented
-Foundation API health and empty job list. Repository submission returns 409 and cannot start a job. Server-side token validation. Fixed read-only Docker probes with timeouts and bounded output. Setup generates a random local token and chmod 0600 configuration. Supervisor parses allowlisted .env values without executing shell expressions and terminates service process groups. Frontend production build and TypeScript checks passed. Live UI/API checks and browser interactions passed; see the validation report.
 
-## Partially implemented / not implemented
-Only shared model types and UX contracts exist for future jobs. No ingestion, persistent jobs, JavaParser analysis, executable sandbox, Groq loop, repair plan, edits, tests of external repositories, diff generation, generated user report, commit/push, or draft PR. No accounts, billing, teams, public deployment, or supported production multi-user mode. Preliminary later-feature drafts written before milestone steering are kept outside this project as scratch; they are not delivered or verified functionality.
+Public repo/same-repo issue intake; archive/path bounds; stack/modules/Spring layers/symbols/findings; saved jobs, SSE, cancellation, restart invalidation; Groq provider and plan/repair tool loop; exact scoped digest patches; baseline/final records; true full-file unified diffs; Markdown/escaped printable HTML reports; default-head/diff-bound publication to a new doctor branch and optional draft PR; portfolio-style responsive dark/light UI; intentionally broken example; automated tests; operational and per-file guides; milestone reports.
 
-## Security decisions
-Loopback binding and backend token protect local access. UI origin/Host checks prevent cross-origin mutations and DNS rebinding through the proxy. Provider keys never reach browser code. Repository execution remains disabled regardless of engine status. Future sandbox requires rootless execution, resource controls, no sensitive mounts/socket/keys, safe path/patch validation and approval gates. A dedicated VM remains recommended for hostile code; Docker is not an absolute guarantee.
+## Workflow
 
-## Configuration
-`DOCTOR_API_TOKEN` (generated, local server secret), `GROQ_API_KEY`, `GROQ_MODEL`, `GITHUB_TOKEN` (unused placeholders this milestone). Frontend server also uses `DOCTOR_BACKEND_URL` and optional `DOCTOR_FRONTEND_ORIGIN`. Never expose token values or commit `.env`/`.env.local`.
+QUEUED -> RUNNING -> AWAITING_APPROVAL -> RUNNING -> COMPLETED; FAILED/CANCELLED are explicit. Without Groq, static scan completes with a no-change report. Approval permits only listed file edits. Publish requires a separate digest and confirmation. COMPLETED never implies passing tests. One worker, four active/queued jobs, bounded provider iterations, source sizes and output.
 
-## Run and test
-`./scripts/setup-local.sh`, then `cd frontend && npm ci --ignore-scripts`, then from root `./scripts/dev.sh`. `./scripts/test.sh` runs configuration tests, backend tests, frontend build. `python3 scripts/smoke.py` checks a running foundation. Runtime dependencies/builds are ignored in `.runtime`, `node_modules`, `.next`, and `target`.
+## Security and decisions
 
-## Known limitations
-The current session cannot access the Docker daemon. Its rootless/cgroup properties are not verified. Compose configuration can be validated but container startup remains untested. No Groq/GitHub keys were supplied or used. Application repair and report workflows are explicitly disabled until their approved milestones.
+Never run untrusted repository code on the host, alter Docker socket permissions or add a host fallback. Rootless engine, cgroup v2/systemd and seccomp prerequisites plus actual in-container enforcement are required. No host binds/socket/secrets/network in execution containers. Docker shares the kernel; recommend a dedicated VM. Source snapshots replace full Git clones; branch is reserved during repair and created remotely only at publication. Sensitive filenames and workflow edits are blocked. Model context is bounded/redacted, but no complete arbitrary-secret detection is claimed. Report facts derive from tool evidence. No remote publication was performed during implementation.
 
-## Next task
-Present Milestone 1 and its completed PDF; request owner confirmation for Milestone 2 safe repository intake. Do not start it automatically.
+## Directory map
+
+frontend/: UI, fonts and guarded proxy. backend/: API/config, source intake, analyzer, model/tools, orchestrator, sandbox, store, reports and GitHub publisher. docker/: trusted images and immutable Python guard. examples/: broken Spring fixture, never executed on host during verification. scripts/: setup, supervision, tests, preflight and report generation. docs/: user/security/architecture/API/file guides and validation. milestone-reports/: all stage PDFs and complete guide. Runtime caches/data are ignored.
+
+## Configuration and operation
+
+DOCTOR_API_TOKEN is generated by setup; GROQ_API_KEY/GROQ_MODEL enable reasoning; GITHUB_TOKEN enables optional publication; DOCTOR_SANDBOX_IMAGE selects the reviewed image; DOCTOR_DATA_DIR moves private snapshots. Frontend server uses DOCTOR_BACKEND_URL and DOCTOR_FRONTEND_ORIGIN. No keys enter browser code. Run `./scripts/dev.sh`; after `cd frontend && npm run build`, `./scripts/dev.sh --production` serves the compiled UI. Backend still runs through Maven locally. `./scripts/test.sh`, `python3 scripts/smoke.py` with app running, and `./scripts/preflight.sh` are documented checks.
+
+## Known limits / not implemented
+
+Public repositories only; 3,000 files, 24 MiB expanded, 1 MiB/file, 20 saved jobs. Analysis selects at most 500 source/config files and 5M characters. No Git history/submodule/LFS hydration or local checkout branch. Root-level Maven/Gradle execution only; Java 21 runtime; narrow reviewed offline dependency cache, especially limited for Gradle. No runtime-resolved Java call graph, comprehensive security scanner, accounts, teams, billing, public deployment, non-Java repairs or automatic merges. CSS is custom rather than Tailwind/shadcn. Base image tags need reviewed digest pinning for distribution. No application open-source license selected; bundled fonts retain their OFL licenses.
+
+## Tests and next tasks
+
+64 backend tests, 17 Python guard tests, 2 configuration tests, production build and 8 live boundary checks passed. Mock execution/provider/publication tests are labeled. Browser verified desktop/mobile and history/report restoration. Next: in a dedicated rootless VM, build image, verify real enforcement/timeouts/cancellation, supply Groq, run broken fixture through baseline failure -> approved edit -> passing verification -> report. Only with an explicitly approved test repository/token, validate remote branch/draft PR behavior. Preserve safety boundaries; do not announce fully accepted MVP until this succeeds.

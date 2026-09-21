@@ -4,6 +4,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.stmt.CatchClause;
@@ -21,6 +22,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 @Service
 public class JavaSpringAnalyzer implements LanguageAnalyzer {
+  private static final int MAX_FILES = 2_000, MAX_FILE_CHARACTERS = 262_144, MAX_TOTAL_CHARACTERS = 8_388_608;
   private record Parsed(String file, CompilationUnit unit) {}
   private record Declared(String qualifiedName, String name, String packageName, String file,
                           CompilationUnit unit, TypeDeclaration<?> declaration) {}
@@ -28,19 +30,24 @@ public class JavaSpringAnalyzer implements LanguageAnalyzer {
   @Override public Analysis analyze(Map<String, String> sources) {
     Objects.requireNonNull(sources, "sources");
     var files = new TreeMap<String, String>();
-    sources.forEach((path, source) -> {
-      if (safeRelative(path) && source != null) files.put(path, source);
-    });
+    int totalCharacters = 0, omitted = 0;
+    for (var entry : sources.entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.nullsLast(String::compareTo))).toList()) {
+      String path = entry.getKey(), source = entry.getValue();
+      if (!safeRelative(path) || source == null || source.length() > MAX_FILE_CHARACTERS || files.size() >= MAX_FILES || totalCharacters + source.length() > MAX_TOTAL_CHARACTERS) { omitted++; continue; }
+      files.put(path, source); totalCharacters += source.length();
+    }
     var findings = new ArrayList<Finding>();
     var observations = new ArrayList<String>();
     observations.add("Static source snapshot only: project code, build scripts, and application configuration were not executed by the analyzer.");
     observations.add("Relationships below reference repository types resolved from imports and packages. This is structural Java parsing, not compiler type checking or a runtime call graph.");
+    if (omitted > 0) observations.add(omitted + " source entry/entries were omitted for invalid paths, missing content, or analyzer snapshot size limits.");
     var modules = new TreeSet<String>();
     var javaVersions = new LinkedHashSet<String>();
     var springVersions = new LinkedHashSet<String>();
     boolean maven = files.keySet().stream().anyMatch(p -> baseName(p).equals("pom.xml"));
     boolean gradle = files.keySet().stream().anyMatch(p -> Set.of("build.gradle", "build.gradle.kts").contains(baseName(p)));
-    for (var entry : files.entrySet()) {
+    var buildEntries = files.entrySet().stream().sorted(Comparator.comparingInt((Map.Entry<String, String> e) -> e.getKey().contains("/") ? 1 : 0).thenComparing(Map.Entry::getKey)).toList();
+    for (var entry : buildEntries) {
       String file = entry.getKey(), source = entry.getValue();
       if (baseName(file).equals("pom.xml")) {
         inspectMaven(file, source, javaVersions, springVersions, modules, findings, observations);
@@ -85,6 +92,7 @@ public class JavaSpringAnalyzer implements LanguageAnalyzer {
       var dependencies = new TreeSet<String>();
       for (var reference : type.declaration().findAll(ClassOrInterfaceType.class)) {
         if (owningType(reference) != type.declaration()) continue;
+        if (isTypeParameter(reference)) continue;
         String resolved = resolve(reference.getNameWithScope(), type, knownNames);
         if (resolved != null && !resolved.equals(type.qualifiedName())) dependencies.add(resolved);
       }
@@ -100,6 +108,7 @@ public class JavaSpringAnalyzer implements LanguageAnalyzer {
     findings.sort(Comparator.comparing(Finding::file).thenComparing(f -> f.line() == null ? 0 : f.line()).thenComparing(Finding::title));
     boolean spring = !springVersions.isEmpty() || parsed.stream().anyMatch(p -> p.unit().getImports().stream().anyMatch(i -> i.getNameAsString().startsWith("org.springframework.boot")));
     if (spring && springVersions.isEmpty()) observations.add("Spring Boot imports were found, but the Boot version could not be resolved from the provided build files.");
+    if (gradle) observations.add("Gradle metadata recognizes literal declarations only; build scripts, version catalogs, imported scripts, and dynamic expressions are not evaluated.");
     if (parsed.isEmpty()) observations.add("No Java files were successfully parsed in the provided snapshot.");
     if (modules.isEmpty()) modules.add(".");
     return new Analysis(files.keySet().stream().anyMatch(p -> p.endsWith(".java")) || maven || gradle ? "Java" : "Unknown",
@@ -159,6 +168,17 @@ public class JavaSpringAnalyzer implements LanguageAnalyzer {
       for (String key : List.of("java.version", "maven.compiler.release", "maven.compiler.source", "maven.compiler.target")) {
         String version = resolveProperty(properties.get(key), properties);
         if (version != null && version.matches("(?:1\\.)?\\d+(?:\\.\\d+)*")) { javaVersions.add(normalizeJava(version)); break; }
+      }
+      NodeList plugins = project.getElementsByTagNameNS("*", "plugin");
+      for (int i = 0; i < plugins.getLength(); i++) {
+        Element plugin = (Element) plugins.item(i);
+        if (!"maven-compiler-plugin".equals(value(plugin, "artifactId"))) continue;
+        Element configuration = child(plugin, "configuration");
+        if (configuration == null) continue;
+        for (String key : List.of("release", "source", "target")) {
+          String version = resolveProperty(value(configuration, key), properties);
+          if (version != null && version.matches("(?:1\\.)?\\d+(?:\\.\\d+)*")) { javaVersions.add(normalizeJava(version)); break; }
+        }
       }
       Element parent = child(project, "parent");
       if (parent != null && "org.springframework.boot".equals(value(parent, "groupId"))) addVersion(springVersions, resolveProperty(value(parent, "version"), properties));
@@ -256,6 +276,14 @@ public class JavaSpringAnalyzer implements LanguageAnalyzer {
     return candidates.size() == 1 ? candidates.iterator().next() : null;
   }
 
+  private static boolean isTypeParameter(ClassOrInterfaceType reference) {
+    String name = reference.getNameWithScope().split("\\.")[0];
+    for (Node parent = reference.getParentNode().orElse(null); parent != null; parent = parent.getParentNode().orElse(null)) {
+      if (parent instanceof NodeWithTypeParameters<?> declaration && declaration.getTypeParameters().stream().anyMatch(p -> p.getNameAsString().equals(name))) return true;
+    }
+    return false;
+  }
+
   private static TypeDeclaration<?> owningType(Node node) {
     for (Node current = node.getParentNode().orElse(null); current != null; current = current.getParentNode().orElse(null))
       if (current instanceof TypeDeclaration<?> type) return type;
@@ -306,7 +334,7 @@ public class JavaSpringAnalyzer implements LanguageAnalyzer {
   private static String localName(Element element) { return element.getLocalName() == null ? element.getTagName() : element.getLocalName(); }
   private static List<Element> children(Element parent) {
     var result = new ArrayList<Element>();
-    for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) if (node instanceof Element element) result.add(element);
+    for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) if (node instanceof Element element) result.add(element);
     return result;
   }
   private static Element child(Element parent, String name) { return children(parent).stream().filter(e -> localName(e).equals(name)).findFirst().orElse(null); }

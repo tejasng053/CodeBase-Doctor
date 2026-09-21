@@ -16,6 +16,8 @@ public final class Models {
   public static class Job {
     public String id, repository, objective, mode, status="QUEUED", stage="Clone", createdAt=Instant.now().toString(), updatedAt=createdAt;
     public String branch, error, diff="", reportMarkdown="", changeSummary="No code changes have been made.", approvalDigest;
+    public String sourceRevision, sourceDefaultBranch, terminal="", publishedBranchUrl, pullRequestUrl, publicationDigest, publishedCommit;
+    public boolean executionAvailable;
     public Analysis analysis;
     public Plan plan;
     public Verification baselineBuild, baselineTests, finalBuild, finalTests;

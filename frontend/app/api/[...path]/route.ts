@@ -3,8 +3,8 @@ import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const jobId = "[a-zA-Z0-9-]{1,80}";
-const readRoute = new RegExp(`^(?:health|jobs|jobs/${jobId}(?:/(?:events|report|diff))?)$`);
-const writeRoute = new RegExp(`^(?:jobs|jobs/${jobId}/(?:approve|cancel))$`);
+const readRoute = new RegExp(`^(?:health|jobs|jobs/${jobId}(?:/(?:events|report|report\\.html|diff))?)$`);
+const writeRoute = new RegExp(`^(?:jobs|jobs/${jobId}/(?:approve|cancel|publish))$`);
 
 type Context = { params: Promise<{ path: string[] }> };
 async function proxy(request: NextRequest, context: Context) {
@@ -55,10 +55,10 @@ async function proxy(request: NextRequest, context: Context) {
     const response = await fetch(new URL(`/api/${route}`, backend), {
       method: request.method, body, redirect: "error", cache: "no-store",
       headers: { "X-Doctor-Token": token, ...(body ? { "Content-Type": "application/json" } : {}) },
-      signal: route.endsWith("/events") ? request.signal : AbortSignal.any([request.signal, AbortSignal.timeout(12000)]),
+      signal: route.endsWith("/events") ? request.signal : AbortSignal.any([request.signal, AbortSignal.timeout(route.endsWith("/publish") ? 175000 : 12000)]),
     });
     const headers = new Headers({ "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
-    for (const key of ["content-type", "content-disposition"]) {
+    for (const key of ["content-type", "content-disposition", "content-security-policy"]) {
       const value = response.headers.get(key); if (value) headers.set(key, value);
     }
     if (route.endsWith("/events")) headers.set("X-Accel-Buffering", "no");

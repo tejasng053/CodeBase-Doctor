@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only/local foundation smoke checks. Requires dev.sh to be running."""
+"""Local API boundary smoke checks. Requires dev.sh to be running."""
 import json
 import urllib.request
 import urllib.error
@@ -21,13 +21,13 @@ def check(path, expected, method='GET', headers=None, body=None):
 
 
 health = json.loads(check('/api/health', 200))
-assert health['status'] == 'UP' and health['executionEnabled'] is False
+assert health['status'] == 'UP' and health['ingestionEnabled'] is True
 assert 'DOCTOR_API_TOKEN' not in json.dumps(health)
-assert json.loads(check('/api/jobs', 200)) == []
-check('/api/jobs', 409, 'POST', {'Content-Type': 'application/json', 'Origin': BASE}, b'{}')
+assert isinstance(json.loads(check('/api/jobs', 200)), list)
+check('/api/jobs', 400, 'POST', {'Content-Type': 'application/json', 'Origin': BASE}, b'{}')
 check('/api/jobs', 403, 'POST', {'Content-Type': 'application/json', 'Origin': 'https://untrusted.example'}, b'{}')
 check('/api/health', 403, headers={'Host': 'untrusted.example'})
 check('/api/health', 403, headers={'Sec-Fetch-Site': 'cross-site'})
 check('/api/unrecognized', 404)
 check('/api/jobs', 413, 'POST', {'Content-Type': 'application/json', 'Origin': BASE}, b'x' * 24001)
-print('All 8 foundation smoke checks passed.')
+print('All 8 local API boundary smoke checks passed.')

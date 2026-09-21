@@ -1,25 +1,23 @@
-# Milestone delivery plan
+# Milestone delivery status
 
-Build one milestone at a time. Debug it, run its applicable checks, record the evidence and limitations in `PROJECT_CONTEXT.md`, and show the user the reviewable result. **Wait for the user's explicit confirmation before starting the next milestone.** Failed checks must be fixed or clearly reported before asking to advance. Approval of a milestone does not authorize future repository edits, builds, commits, or publishing outside the product's separate action approvals.
+Updated 20 September 2026. The owner authorized completing all development parts together; no further development approval is required. Product approvals before edits and GitHub writes remain mandatory. The nine consolidated delivery stages below cover the original twelve-stage brief. Each PDF records implementation, file purposes, checks and explicit runtime limits. A historical foundation PDF is retained.
 
-| Milestone | Status | Deliverable | Checks before review |
-| --- | --- | --- | --- |
-| 1. Foundation | READY FOR REVIEW | Project layout, local UI/API foundation, configuration guidance, safety boundaries, and this delivery plan. | Build and check the foundation's own code; verify local startup, UI/API connection, configuration errors, and accurately reported unavailable capabilities. |
-| 2. Safe snapshot and ingestion | NOT STARTED | Validate public GitHub inputs; bounded repository acquisition and source snapshots; explicit size and path limits; safe cancellation and cleanup. | Exercise invalid URLs, private-network destinations, traversal, symlinks, oversized repositories, timeouts, and cleanup. Confirm no repository code runs on the host. |
-| 3. Java intelligence | NOT STARTED | Java/Spring detection, build metadata, modules, structural symbols and relationships, and findings with file/line evidence. | Check Maven and Gradle fixtures, secure XML rejection, annotation-based layers, unresolved references, parser failures, and separation of observations from suspected defects. |
-| 4. Sandbox builds | NOT STARTED | Controlled baseline builds/tests with real output, resource/time limits, restricted mounts/network, and fail-closed execution when sandbox prerequisites are absent. | Verify the implemented container boundaries and failure paths; exercise timeout, cancellation, resource limits, and honest test-result parsing. Record the exact isolation tested. |
-| 5. Groq plans | NOT STARTED | Server-side Groq integration and bounded read-only diagnosis/planning tools; reviewable plans grounded in inspected files. | Check missing keys, provider failures, budgets, malformed tool requests, repository prompt injection, and plans without fabricated evidence. |
-| 6. Approved repair tools | NOT STARTED | Explicit plan approval, dedicated branch, bounded file edits, genuine progress events, and reviewable diffs. | Reject edits without approval and unsafe paths; validate cancellation, changed-plan approval invalidation, and accurate changed-file/diff records. |
-| 7. Verification and reports | NOT STARTED | Real post-change builds/tests and downloadable documentation covering repository overview, principal changes, per-file reasons, before/after evidence, and limitations. | Check failing, passing, partial, timed-out, and unrun cases; validate report facts against stored evidence and diff; render hostile Markdown safely; verify the download. See `DOCUMENTATION_FEATURE.md`. |
-| 8. GitHub approval and draft PR | NOT STARTED | Separately approved commit/push actions and optional draft pull request with the report's factual summary. | Verify approval is bound to the reviewed diff; reject default-branch pushes; test auth/API failures and accidental duplicate actions. A draft PR remains the default. |
-| 9. End-to-end example and release | NOT STARTED | A deliberately broken Spring example, complete documented workflow, tested setup, and release notes with known limitations. | Run the example only in the approved sandbox. Demonstrate baseline failure → reviewed plan → approved repair → real verification → report, including cancellation and failure recovery. |
+| Stage | State | Scope |
+| --- | --- | --- |
+| 1. Foundation | Validated | Local UI/API, token guard, setup and initial architecture. Historical PDF preserved. |
+| 2. Repository ingestion | Validated | Pinned public GitHub archive, bounded source maps, path policy and persisted workspaces. |
+| 3. Java intelligence | Validated | JavaParser metadata, Spring layers, module/symbol maps and evidence-backed findings. |
+| 4. Sandbox execution | Implemented; runtime blocked | Rootless Docker controller, immutable guard, offline commands, streaming output and enforced resource checks. |
+| 5. Groq planning | Implemented; live provider pending | Groq provider abstraction, structured tools, bounded context, plan generation and workflow state. |
+| 6. Approved repair | Implemented; live execution pending | Exact-plan approval, digest-checked scoped patches, true source diff and mandatory final verification. |
+| 7. Verification and reports | Reports validated; execution pending | Before/after evidence, principal change, per-file explanations, Markdown/HTML downloads and saved history. |
+| 8. GitHub publication | Implemented; live publication pending | Reviewed digest, saved-source consistency, default-head check, new doctor branch and optional draft PR. |
+| 9. UI, example and release | Local UI validated; full acceptance pending | Portfolio-inspired UI, broken Spring fixture, complete guides, file inventory and milestone PDFs. |
 
-## Current boundary
+## Mapping to the original brief
 
-Only the foundation is in progress. All subsequent milestones require confirmation before work starts. A preliminary analyzer was authored during initial exploration; it is an unverified scratch draft outside the delivered product, not a completed Java intelligence feature.
+Original stages 1-6 correspond to delivery stages 1-6. Original stage 7 (human approval) is covered in 6 and 8; stage 8 (verification loop) in 6 and 7; stage 9 (developer UI) in 9; stage 10 (GitHub) in 8; stages 11-12 (example/testing/release) in 9. This is a reporting consolidation, not a claim that unrun external acceptance checks passed.
 
-## Safety evidence
+## Acceptance still required
 
-The design calls for isolated repository execution, narrow filesystem access, and explicit approvals. These are requirements until implemented and checked; this document does not claim rootless Docker or any other isolation has already been proven. Container isolation shares the host kernel and cannot guarantee protection against every hostile repository. Record the tested environment and residual limits when reviewing the sandbox milestone.
-
-At each review gate, create a PDF in `milestone-reports/` containing the folder tree, each created or changed file and purpose, debugging evidence, and known limits. This is required before requesting confirmation.
+In a dedicated rootless VM, build the reviewed sandbox image, exercise actual resource/cancellation boundaries, configure a Groq key and run the intentionally broken fixture through baseline failure, plan review, approved edit, successful verification and report. GitHub publication additionally needs an authorized test repository/token and explicit in-product approval. No Docker permission changes, key requests or remote writes were performed to manufacture evidence.

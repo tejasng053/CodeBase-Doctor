@@ -6,10 +6,11 @@ export type Verification = { status: string; tests: number | null; failures: num
 export type Plan = { summary: string; steps: string[]; files: string[]; risks: string[] };
 export type Job = {
   id: string; repository: string; objective: string; mode: "SCAN" | "SOLVE"; status: Status; stage: string; createdAt: string; updatedAt: string;
+  sourceRevision?: string; sourceDefaultBranch?: string; terminal?: string; publishedCommit?: string; executionAvailable?: boolean; publishedBranchUrl?: string; pullRequestUrl?: string; publicationDigest?: string;
   branch: string | null; error: string | null; diff: string; reportMarkdown: string; changeSummary: string; approvalDigest: string | null;
   analysis: Analysis | null; plan: Plan | null; baselineBuild: Verification | null; baselineTests: Verification | null; finalBuild: Verification | null; finalTests: Verification | null;
   events: { sequence: number; timestamp: string; stage: string; tool: string; status: string; message: string; durationMs: number }[];
   changes: { file: string; summary: string; reason: string; additions: number; deletions: number }[];
   inspectedFiles: string[]; concerns: string[]; cancelled: boolean;
 };
-export type Health = { executionEnabled?: boolean; message?: string; sandbox: { available: boolean; message: string; [key: string]: unknown }; groqConfigured: boolean };
+export type Health = { ingestionEnabled?: boolean; publishingConfigured?: boolean; executionEnabled?: boolean; message?: string; sandbox: { available: boolean; message: string; [key: string]: unknown }; groqConfigured: boolean };
